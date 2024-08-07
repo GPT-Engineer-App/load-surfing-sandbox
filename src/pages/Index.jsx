@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Instagram, Facebook, Twitter } from "lucide-react";
+import { Instagram, Facebook, Twitter, ChevronLeft, ChevronRight } from "lucide-react";
+import { motion, useAnimation } from "framer-motion";
 
 const catFacts = [
   "Cats sleep for about 70% of their lives.",
@@ -11,41 +12,82 @@ const catFacts = [
   "Cats can jump up to six times their length.",
 ];
 
+const catBreeds = [
+  { name: "Siamese", image: "https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg" },
+  { name: "Persian", image: "https://upload.wikimedia.org/wikipedia/commons/1/15/White_Persian_Cat.jpg" },
+  { name: "Maine Coon", image: "https://upload.wikimedia.org/wikipedia/commons/5/5f/Maine_Coon_cat_by_Tomitheos.JPG" },
+  { name: "Bengal", image: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Paintedcats_Red_Star_standing.jpg" },
+  { name: "British Shorthair", image: "https://upload.wikimedia.org/wikipedia/commons/9/9d/Britishblue.jpg" },
+];
+
 const Index = () => {
   const [catFact, setCatFact] = useState("");
+  const [currentBreedIndex, setCurrentBreedIndex] = useState(0);
+  const controls = useAnimation();
 
-  const generateCatFact = () => {
+  const generateCatFact = async () => {
+    await controls.start({ opacity: 0, y: 20 });
     const randomFact = catFacts[Math.floor(Math.random() * catFacts.length)];
     setCatFact(randomFact);
+    await controls.start({ opacity: 1, y: 0 });
   };
+
+  const nextBreed = () => {
+    setCurrentBreedIndex((prevIndex) => (prevIndex + 1) % catBreeds.length);
+  };
+
+  const prevBreed = () => {
+    setCurrentBreedIndex((prevIndex) => (prevIndex - 1 + catBreeds.length) % catBreeds.length);
+  };
+
+  useEffect(() => {
+    const parallaxEffect = () => {
+      const scrolled = window.scrollY;
+      const parallax = document.querySelector(".parallax");
+      parallax.style.transform = `translateY(${scrolled * 0.5}px)`;
+    };
+
+    window.addEventListener("scroll", parallaxEffect);
+    return () => window.removeEventListener("scroll", parallaxEffect);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
-      <nav className="bg-gray-800 text-white p-4">
+      <nav className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 fixed w-full z-10">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold">CatWorld</h1>
           <ul className="flex space-x-4">
-            <li><a href="#" className="hover:text-gray-300">Home</a></li>
-            <li><a href="#" className="hover:text-gray-300">About</a></li>
-            <li><a href="#" className="hover:text-gray-300">Contact</a></li>
+            <li><a href="#" className="hover:text-gray-300 transition-colors">Home</a></li>
+            <li><a href="#" className="hover:text-gray-300 transition-colors">About</a></li>
+            <li><a href="#" className="hover:text-gray-300 transition-colors">Contact</a></li>
           </ul>
         </div>
       </nav>
 
-      <div className="flex-grow">
-        <div className="bg-cover bg-center h-96 flex items-center justify-center" style={{backgroundImage: "url('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"}}>
-          <h1 className="text-6xl font-bold text-white shadow-lg">All About Cats</h1>
+      <div className="flex-grow pt-16">
+        <div className="relative h-screen overflow-hidden">
+          <div className="absolute inset-0 parallax">
+            <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Cat" className="w-full h-full object-cover" />
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <h1 className="text-6xl font-bold text-white shadow-lg text-center">Welcome to the<br />Fascinating World of Cats</h1>
+          </div>
         </div>
 
         <div className="max-w-7xl mx-auto p-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-            <Card>
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8"
+          >
+            <Card className="transform hover:scale-105 transition-transform duration-300">
               <CardHeader>
                 <CardTitle>Characteristics of Cats</CardTitle>
                 <CardDescription>What makes cats unique?</CardDescription>
               </CardHeader>
               <CardContent>
-                <ul className="list-disc pl-6">
+                <ul className="list-disc pl-6 space-y-2">
                   <li>Independent nature</li>
                   <li>Excellent hunters with sharp claws and teeth</li>
                   <li>Flexible bodies and quick reflexes</li>
@@ -55,45 +97,58 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="transform hover:scale-105 transition-transform duration-300">
               <CardHeader>
                 <CardTitle>Popular Cat Breeds</CardTitle>
-                <CardDescription>Some well-known cat breeds around the world</CardDescription>
+                <CardDescription>Explore different cat breeds</CardDescription>
               </CardHeader>
-              <CardContent>
-                <ul className="list-disc pl-6">
-                  <li>Siamese</li>
-                  <li>Persian</li>
-                  <li>Maine Coon</li>
-                  <li>Bengal</li>
-                  <li>British Shorthair</li>
-                </ul>
+              <CardContent className="relative">
+                <div className="flex items-center justify-between mb-4">
+                  <Button onClick={prevBreed} variant="outline" size="icon"><ChevronLeft className="h-4 w-4" /></Button>
+                  <h3 className="text-xl font-semibold">{catBreeds[currentBreedIndex].name}</h3>
+                  <Button onClick={nextBreed} variant="outline" size="icon"><ChevronRight className="h-4 w-4" /></Button>
+                </div>
+                <img src={catBreeds[currentBreedIndex].image} alt={catBreeds[currentBreedIndex].name} className="w-full h-64 object-cover rounded-lg" />
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
 
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Cat Fact Generator</CardTitle>
-              <CardDescription>Learn interesting facts about cats!</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={generateCatFact}>Generate Cat Fact</Button>
-              {catFact && (
-                <p className="mt-4 p-4 bg-gray-100 rounded-lg">{catFact}</p>
-              )}
-            </CardContent>
-          </Card>
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle>Cat Fact Generator</CardTitle>
+                <CardDescription>Learn interesting facts about cats!</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={generateCatFact} className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 transform hover:scale-105">
+                  Generate Cat Fact
+                </Button>
+                <motion.div
+                  animate={controls}
+                  initial={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  {catFact && (
+                    <p className="mt-4 p-4 bg-gray-100 rounded-lg shadow-inner">{catFact}</p>
+                  )}
+                </motion.div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </div>
 
-      <footer className="bg-gray-800 text-white p-8">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+      <footer className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-8">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
           <p>&copy; 2023 CatWorld. All rights reserved.</p>
-          <div className="flex space-x-4">
-            <a href="#" className="hover:text-gray-300"><Instagram /></a>
-            <a href="#" className="hover:text-gray-300"><Facebook /></a>
-            <a href="#" className="hover:text-gray-300"><Twitter /></a>
+          <div className="flex space-x-4 mt-4 md:mt-0">
+            <a href="#" className="hover:text-gray-300 transition-colors"><Instagram /></a>
+            <a href="#" className="hover:text-gray-300 transition-colors"><Facebook /></a>
+            <a href="#" className="hover:text-gray-300 transition-colors"><Twitter /></a>
           </div>
         </div>
       </footer>
