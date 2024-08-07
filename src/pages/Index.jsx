@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Instagram, Facebook, Twitter, ChevronLeft, ChevronRight } from "lucide-react";
-import { motion, useAnimation } from "framer-motion";
+import { Instagram, Facebook, Twitter, ChevronLeft, ChevronRight, Paw } from "lucide-react";
+import { motion, useAnimation, AnimatePresence } from "framer-motion";
+import { useToast } from "@/components/ui/use-toast";
 
 const catFacts = [
   "Cats sleep for about 70% of their lives.",
@@ -10,26 +11,35 @@ const catFacts = [
   "Cats have over 20 vocalizations, including the purr, meow, and chirp.",
   "The first cat in space was a French cat named Felicette in 1963.",
   "Cats can jump up to six times their length.",
+  "A cat's nose print is unique, like a human's fingerprint.",
+  "Cats have 230 bones, while humans only have 206.",
+  "The oldest known pet cat was found in a 9,500-year-old grave on Cyprus.",
 ];
 
 const catBreeds = [
-  { name: "Siamese", image: "https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg" },
-  { name: "Persian", image: "https://upload.wikimedia.org/wikipedia/commons/1/15/White_Persian_Cat.jpg" },
-  { name: "Maine Coon", image: "https://upload.wikimedia.org/wikipedia/commons/5/5f/Maine_Coon_cat_by_Tomitheos.JPG" },
-  { name: "Bengal", image: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Paintedcats_Red_Star_standing.jpg" },
-  { name: "British Shorthair", image: "https://upload.wikimedia.org/wikipedia/commons/9/9d/Britishblue.jpg" },
+  { name: "Siamese", image: "https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg", description: "Known for their distinctive color points and blue almond-shaped eyes." },
+  { name: "Persian", image: "https://upload.wikimedia.org/wikipedia/commons/1/15/White_Persian_Cat.jpg", description: "Characterized by their long, fluffy coat and round face." },
+  { name: "Maine Coon", image: "https://upload.wikimedia.org/wikipedia/commons/5/5f/Maine_Coon_cat_by_Tomitheos.JPG", description: "One of the largest domesticated cat breeds, known for their intelligence and playful personality." },
+  { name: "Bengal", image: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Paintedcats_Red_Star_standing.jpg", description: "Developed to look like exotic jungle cats such as leopards and ocelots." },
+  { name: "British Shorthair", image: "https://upload.wikimedia.org/wikipedia/commons/9/9d/Britishblue.jpg", description: "Known for their dense, plush coat and round face with chubby cheeks." },
 ];
 
 const Index = () => {
   const [catFact, setCatFact] = useState("");
   const [currentBreedIndex, setCurrentBreedIndex] = useState(0);
   const controls = useAnimation();
+  const { toast } = useToast();
 
   const generateCatFact = async () => {
     await controls.start({ opacity: 0, y: 20 });
     const randomFact = catFacts[Math.floor(Math.random() * catFacts.length)];
     setCatFact(randomFact);
     await controls.start({ opacity: 1, y: 0 });
+    toast({
+      title: "New Cat Fact!",
+      description: "Did you know? " + randomFact,
+      duration: 5000,
+    });
   };
 
   const nextBreed = () => {
@@ -55,7 +65,10 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <nav className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 fixed w-full z-10">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold">CatWorld</h1>
+          <h1 className="text-2xl font-bold flex items-center">
+            <Paw className="mr-2" />
+            CatWorld
+          </h1>
           <ul className="flex space-x-4">
             <li><a href="#" className="hover:text-gray-300 transition-colors">Home</a></li>
             <li><a href="#" className="hover:text-gray-300 transition-colors">About</a></li>
@@ -70,7 +83,14 @@ const Index = () => {
             <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Cat" className="w-full h-full object-cover" />
           </div>
           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <h1 className="text-6xl font-bold text-white shadow-lg text-center">Welcome to the<br />Fascinating World of Cats</h1>
+            <motion.h1 
+              initial={{ opacity: 0, y: -50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.5 }}
+              className="text-6xl font-bold text-white shadow-lg text-center"
+            >
+              Welcome to the<br />Fascinating World of Cats
+            </motion.h1>
           </div>
         </div>
 
@@ -108,7 +128,18 @@ const Index = () => {
                   <h3 className="text-xl font-semibold">{catBreeds[currentBreedIndex].name}</h3>
                   <Button onClick={nextBreed} variant="outline" size="icon"><ChevronRight className="h-4 w-4" /></Button>
                 </div>
-                <img src={catBreeds[currentBreedIndex].image} alt={catBreeds[currentBreedIndex].name} className="w-full h-64 object-cover rounded-lg" />
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentBreedIndex}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <img src={catBreeds[currentBreedIndex].image} alt={catBreeds[currentBreedIndex].name} className="w-full h-64 object-cover rounded-lg mb-4" />
+                    <p className="text-sm text-gray-600">{catBreeds[currentBreedIndex].description}</p>
+                  </motion.div>
+                </AnimatePresence>
               </CardContent>
             </Card>
           </motion.div>
@@ -124,18 +155,27 @@ const Index = () => {
                 <CardDescription>Learn interesting facts about cats!</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button onClick={generateCatFact} className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 transform hover:scale-105">
+                <Button 
+                  onClick={generateCatFact} 
+                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 transform hover:scale-105"
+                >
+                  <Paw className="mr-2 h-4 w-4" />
                   Generate Cat Fact
                 </Button>
-                <motion.div
-                  animate={controls}
-                  initial={{ opacity: 0, y: 20 }}
-                  transition={{ duration: 0.5 }}
-                >
+                <AnimatePresence mode="wait">
                   {catFact && (
-                    <p className="mt-4 p-4 bg-gray-100 rounded-lg shadow-inner">{catFact}</p>
+                    <motion.div
+                      key={catFact}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.5 }}
+                      className="mt-4 p-4 bg-gray-100 rounded-lg shadow-inner"
+                    >
+                      <p>{catFact}</p>
+                    </motion.div>
                   )}
-                </motion.div>
+                </AnimatePresence>
               </CardContent>
             </Card>
           </motion.div>
